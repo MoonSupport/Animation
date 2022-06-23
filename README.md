@@ -1,3 +1,5 @@
 # SSCA(Super Simple Canvas Animation)
 
-Description of how to draw the canvas elements sequentially
+<img style="width:300px" src="./ezgif.com-gif-maker.gif"/>
+
+캔버스 위에 애니메이션을 그립니다.
