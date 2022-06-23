@@ -6,6 +6,8 @@
   </head>
   <script>
     function animatePathDrawing(ctx, x0, y0, x1, y1, x2, y2, duration) {
+      const ctxSize = calculateClearLayer(x0, y0, x1, y1, x2, y2);
+
       let start = null;
 
       const step = function animatePathDrawingStep(timestamp) {
@@ -14,7 +16,7 @@
         const delta = timestamp - start,
           progress = Math.min(delta / duration, 1);
 
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.clearRect(...ctxSize);
 
         drawBezierSplit(ctx, x0, y0, x1, y1, x2, y2, 0, progress);
 
@@ -69,12 +71,54 @@
       return (1.0 - t) * v0 + t * v1;
     }
 
+    function calculateClearLayer(x0, y0, x1, y1, x2, y2) {
+      let max_x = -9999,
+        max_y = -9999,
+        min_x = 9999,
+        min_y = 9999;
+      for (let t1 = 0; t1 < 1; t1 += 0.016) {
+        const t0 = 0;
+        let t00 = t0 * t0,
+          t01 = 1.0 - t0,
+          t02 = t01 * t01,
+          t03 = 2.0 * t0 * t01;
+        const nx0 = t02 * x0 + t03 * x1 + t00 * x2,
+          ny0 = t02 * y0 + t03 * y1 + t00 * y2;
+        if (nx0 > max_x) max_x = nx0;
+        if (ny0 > max_y) max_y = ny0;
+
+        if (nx0 < min_x) min_x = nx0;
+        if (ny0 < min_y) min_y = ny0;
+
+        t00 = t1 * t1;
+        t01 = 1.0 - t1;
+        t02 = t01 * t01;
+        t03 = 2.0 * t1 * t01;
+
+        const nx2 = t02 * x0 + t03 * x1 + t00 * x2,
+          ny2 = t02 * y0 + t03 * y1 + t00 * y2;
+
+        if (nx2 > max_x) max_x = nx2;
+        if (ny2 > max_y) max_y = ny2;
+
+        if (nx2 < min_x) min_x = nx2;
+        if (ny2 < min_y) min_y = ny2;
+      }
+
+      const axis_x = min_x;
+      const axis_y = min_y;
+      const width = max_x - min_x;
+      const height = max_y - min_y;
+
+      return [axis_x / 1.1, axis_y / 1.1, width * 1.1, height * 1.1];
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
       const docCanvas = document.getElementById("canvas"),
         ctx = docCanvas.getContext("2d");
 
       animatePathDrawing(ctx, 0, 100, 150, -50, 300, 100, 1000);
-      animatePathDrawing(ctx, 0, 150, 150, 0, 300, 150, 1000);
+      animatePathDrawing(ctx, 0, 300, 150, -50, 300, 300, 1000);
     });
   </script>
 
