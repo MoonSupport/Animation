@@ -6,12 +6,12 @@
   </head>
   <script>
     function animatePathDrawing(ctx, x0, y0, x1, y1, x2, y2, duration) {
-      var start = null;
+      let start = null;
 
-      var step = function animatePathDrawingStep(timestamp) {
+      const step = function animatePathDrawingStep(timestamp) {
         if (start === null) start = timestamp;
 
-        var delta = timestamp - start,
+        const delta = timestamp - start,
           progress = Math.min(delta / duration, 1);
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -33,12 +33,14 @@
         ctx.moveTo(x0, y0);
         ctx.quadraticCurveTo(x1, y1, x2, y2);
       } else if (t0 != t1) {
-        var t00 = t0 * t0,
+        // https://javascript.info/bezier-curve#maths
+        // P = (1−t)2P1 + 2(1−t)tP2 + t2P3
+        const t00 = t0 * t0,
           t01 = 1.0 - t0,
           t02 = t01 * t01,
           t03 = 2.0 * t0 * t01;
 
-        var nx0 = t02 * x0 + t03 * x1 + t00 * x2,
+        const nx0 = t02 * x0 + t03 * x1 + t00 * x2,
           ny0 = t02 * y0 + t03 * y1 + t00 * y2;
 
         t00 = t1 * t1;
@@ -46,10 +48,10 @@
         t02 = t01 * t01;
         t03 = 2.0 * t1 * t01;
 
-        var nx2 = t02 * x0 + t03 * x1 + t00 * x2,
+        const nx2 = t02 * x0 + t03 * x1 + t00 * x2,
           ny2 = t02 * y0 + t03 * y1 + t00 * y2;
 
-        var nx1 = lerp(lerp(x0, x1, t0), lerp(x1, x2, t0), t1),
+        const nx1 = lerp(lerp(x0, x1, t0), lerp(x1, x2, t0), t1),
           ny1 = lerp(lerp(y0, y1, t0), lerp(y1, y2, t0), t1);
 
         ctx.moveTo(nx0, ny0);
@@ -68,7 +70,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-      var docCanvas = document.getElementById("canvas"),
+      const docCanvas = document.getElementById("canvas"),
         ctx = docCanvas.getContext("2d");
 
       animatePathDrawing(ctx, 0, 100, 150, -50, 300, 100, 1000);
