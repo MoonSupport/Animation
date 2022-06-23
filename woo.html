@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script type="application/javascript">
+      function _draw() {
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        let ak = 0;
+        function draw() {
+          console.log("draw");
+          ctx.beginPath();
+          ctx.arc(100, 100, 50, 0, (Math.PI / 180) * ak);
+          ak += 5;
+          ctx.stroke();
+          if (ak <= 360) requestAnimationFrame(draw);
+        }
+
+        requestAnimationFrame(draw);
+      }
+    </script>
+  </head>
+  <body onload="_draw();">
+    <canvas id="canvas" width="300" height="300"></canvas>
+  </body>
+</html>

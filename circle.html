@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script type="application/javascript"></script>
+  </head>
+  <script src="../dist/leon.js"></script>
+
+  <script>
+    let init = false;
+    function draw() {
+      if (!init) {
+        document.querySelector("body").addEventListener("click", () => {
+          draw();
+        });
+        init = true;
+      }
+
+      const canvas = document.querySelector("#canvas");
+      const context = canvas.getContext("2d");
+      context.clearRect(0, 0, 300, 300);
+
+      const commands = [
+        (radius) => {
+          context.beginPath();
+          context.arc(50, 50, 50, 0, (Math.PI / 180) * radius);
+        },
+      ];
+      let curr = 0;
+
+      function runCommand(curr) {
+        console.log(curr);
+        if (curr >= commands.length) return;
+        const command = commands[curr];
+        if (curr == 1) {
+          command();
+          runCommand(curr + 1);
+        } else {
+          function call(i) {
+            requestAnimationFrame(() => {
+              if (i > 360) {
+                runCommand(curr + 1);
+                return;
+              }
+              command(i);
+              context.stroke();
+              call(i + 6);
+            });
+          }
+          call(0);
+        }
+      }
+      runCommand(0);
+    }
+  </script>
+
+  <body onload="draw();">
+    <canvas id="canvas" width="300" height="300"></canvas>
+  </body>
+</html>
