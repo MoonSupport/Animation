@@ -4,18 +4,470 @@
     <meta charset="utf-8" />
     <script type="application/javascript"></script>
   </head>
-  <script src="../dist/leon.js"></script>
 
   <script>
-    let init = false;
+    function drawBezierSplit(ctx, x0, y0, x1, y1, x2, y2, t0, t1) {
+      ctx.beginPath();
 
-    document.addEventListener("DOMContentLoaded");
+      if (0.0 == t0 && t1 == 1.0) {
+        ctx.moveTo(x0, y0);
+        ctx.quadraticCurveTo(x1, y1, x2, y2);
+      } else if (t0 != t1) {
+        // https://javascript.info/bezier-curve#maths
+        // P = (1−t)2P1 + 2(1−t)tP2 + t2P3
+        let t00 = t0 * t0,
+          t01 = 1.0 - t0,
+          t02 = t01 * t01,
+          t03 = 2.0 * t0 * t01;
 
-    function draw() {}
+        const nx0 = t02 * x0 + t03 * x1 + t00 * x2,
+          ny0 = t02 * y0 + t03 * y1 + t00 * y2;
+
+        t00 = t1 * t1;
+        t01 = 1.0 - t1;
+        t02 = t01 * t01;
+        t03 = 2.0 * t1 * t01;
+
+        const nx2 = t02 * x0 + t03 * x1 + t00 * x2,
+          ny2 = t02 * y0 + t03 * y1 + t00 * y2;
+
+        const nx1 = lerp(lerp(x0, x1, t0), lerp(x1, x2, t0), t1),
+          ny1 = lerp(lerp(y0, y1, t0), lerp(y1, y2, t0), t1);
+
+        ctx.moveTo(nx0, ny0);
+        ctx.quadraticCurveTo(nx1, ny1, nx2, ny2);
+      }
+
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+    function lerp(v0, v1, t) {
+      return (1.0 - t) * v0 + t * v1;
+    }
+
+    function calculateClearLayer(x0, y0, x1, y1, x2, y2) {
+      let max_x = -9999,
+        max_y = -9999,
+        min_x = 9999,
+        min_y = 9999;
+      for (let t1 = 0; t1 < 1; t1 += 0.016) {
+        const t0 = 0;
+        let t00 = t0 * t0,
+          t01 = 1.0 - t0,
+          t02 = t01 * t01,
+          t03 = 2.0 * t0 * t01;
+        const nx0 = t02 * x0 + t03 * x1 + t00 * x2,
+          ny0 = t02 * y0 + t03 * y1 + t00 * y2;
+        if (nx0 > max_x) max_x = nx0;
+        if (ny0 > max_y) max_y = ny0;
+
+        if (nx0 < min_x) min_x = nx0;
+        if (ny0 < min_y) min_y = ny0;
+
+        t00 = t1 * t1;
+        t01 = 1.0 - t1;
+        t02 = t01 * t01;
+        t03 = 2.0 * t1 * t01;
+
+        const nx2 = t02 * x0 + t03 * x1 + t00 * x2,
+          ny2 = t02 * y0 + t03 * y1 + t00 * y2;
+
+        if (nx2 > max_x) max_x = nx2;
+        if (ny2 > max_y) max_y = ny2;
+
+        if (nx2 < min_x) min_x = nx2;
+        if (ny2 < min_y) min_y = ny2;
+      }
+
+      const axis_x = min_x;
+      const axis_y = min_y;
+      const width = max_x - min_x;
+      const height = max_y - min_y;
+      const w = 1.0;
+      return [axis_x / w, axis_y / w, width * w, height * w];
+    }
+
+    console.log("run");
+    const TYPE = {
+      VOID: "VOID",
+      LINE: "LINE",
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.body.addEventListener("click", draw);
+    });
+
+    function draw() {
+      const canvas = document.getElementById("canvas");
+      const context = canvas.getContext("2d");
+      context.clearRect(0, 0, 300, 300);
+
+      const commands = [
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.beginPath();
+          },
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.moveTo(50, 50);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 50,
+          g_x: 70,
+          s_y: 50,
+          run: function (delta) {
+            context.lineWidth = 7;
+            context.strokeStyle = "#333";
+            context.lineTo(this.s_x + (this.g_x - this.s_x) * delta, this.s_y);
+            context.stroke();
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.moveTo(40, 62);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 40,
+          g_x: 80,
+          s_y: 62,
+          run: function (delta) {
+            context.lineTo(this.s_x + (this.g_x - this.s_x) * delta, this.s_y);
+            context.stroke();
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.moveTo(70, 85);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 60,
+          s_y: 85,
+          radius: 12,
+          startAngle: 0,
+          endAngle: Math.PI * 2,
+          run: function (delta) {
+            context.beginPath();
+            context.arc(
+              this.s_x,
+              this.s_y,
+              this.radius,
+              this.startAngle,
+              this.endAngle * delta
+            );
+            context.stroke();
+          },
+          duration: 200,
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.moveTo(90, 40);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 90,
+          s_y: 40,
+          g_y: 115,
+          run: function (delta) {
+            context.lineTo(this.s_x, this.s_y + (this.g_y - this.s_y) * delta);
+            context.stroke();
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.moveTo(90, 75);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 90,
+          g_x: 105,
+          s_y: 75,
+          run: function (delta) {
+            context.lineTo(this.s_x + (this.g_x - this.s_x) * delta, this.s_y);
+            context.stroke();
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.LINE,
+          run: function (delta) {
+            drawBezierSplit(context, 115, 75, 115, 50, 130, 50, 0, delta);
+          },
+          duration: 75,
+        },
+        {
+          type: TYPE.LINE,
+          run: function (delta) {
+            drawBezierSplit(context, 130, 50, 143, 50, 143, 75, 0, delta);
+          },
+          duration: 75,
+        },
+        {
+          type: TYPE.LINE,
+          run: function (delta) {
+            drawBezierSplit(context, 143, 75, 139, 95, 130, 95, 0, delta);
+          },
+          duration: 75,
+        },
+        {
+          type: TYPE.LINE,
+          run: function (delta) {
+            drawBezierSplit(context, 130, 95, 117, 97, 115, 75, 0, delta);
+          },
+          duration: 75,
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.beginPath();
+
+            context.moveTo(163, 42);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 163,
+          s_y: 42,
+          g_y: 115,
+          run: function (delta) {
+            context.lineTo(this.s_x, this.s_y + (this.g_y - this.s_y) * delta);
+            context.stroke();
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 190,
+          s_y: 65,
+          d: 20,
+          run: function (delta) {
+            context.lineWidth = 4;
+            context.strokeStyle = "#F07878";
+            drawBezierSplit(
+              context,
+              this.s_x,
+              this.s_y,
+              this.s_x,
+              this.s_y - this.d,
+              this.s_x + this.d,
+              this.s_y - this.d,
+              0,
+              delta
+            );
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 210,
+          s_y: 45,
+          d: 20,
+          run: function (delta) {
+            drawBezierSplit(
+              context,
+              this.s_x,
+              this.s_y,
+              this.s_x + this.d,
+              this.s_y,
+              this.s_x + this.d,
+              this.s_y + this.d,
+              0,
+              delta
+            );
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 230,
+          s_y: 65,
+          d: 20,
+          run: function (delta) {
+            drawBezierSplit(
+              context,
+              this.s_x,
+              this.s_y,
+              this.s_x,
+              this.s_y - this.d,
+              this.s_x + this.d,
+              this.s_y - this.d,
+              0,
+              delta
+            );
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 250,
+          s_y: 45,
+          d: 20,
+          run: function (delta) {
+            drawBezierSplit(
+              context,
+              this.s_x,
+              this.s_y,
+              this.s_x + this.d,
+              this.s_y,
+              this.s_x + this.d,
+              this.s_y + this.d,
+              0,
+              delta
+            );
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 270,
+          s_y: 65,
+          d: 20,
+          run: function (delta) {
+            drawBezierSplit(
+              context,
+              this.s_x,
+              this.s_y,
+
+              this.s_x,
+              this.s_y + this.d,
+
+              this.s_x - this.d,
+              this.s_y + this.d * 2,
+              0,
+              delta
+            );
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.beginPath();
+            context.moveTo(250, 105);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 250,
+          g_x: 230,
+          s_y: 105,
+          g_y: 120,
+          run: function (delta) {
+            context.lineTo(
+              this.s_x + (this.g_x - this.s_x) * delta,
+              this.s_y + (this.g_y - this.s_y) * delta
+            );
+            context.stroke();
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.VOID,
+          run: () => {
+            context.beginPath();
+            context.moveTo(230, 120);
+          },
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 230,
+          g_x: 210,
+          s_y: 120,
+          g_y: 105,
+          run: function (delta) {
+            context.lineTo(
+              this.s_x + (this.g_x - this.s_x) * delta,
+              this.s_y + (this.g_y - this.s_y) * delta
+            );
+            context.stroke();
+          },
+          duration: 150,
+        },
+        {
+          type: TYPE.LINE,
+          s_x: 210,
+          s_y: 105,
+          d: 20,
+          run: function (delta) {
+            drawBezierSplit(
+              context,
+              this.s_x,
+              this.s_y,
+
+              this.s_x - this.d,
+              this.s_y - this.d,
+
+              this.s_x - this.d,
+              this.s_y - this.d * 2,
+              0,
+              delta
+            );
+          },
+          duration: 150,
+        },
+      ];
+
+      runCommand(commands);
+    }
+
+    const drawing = (command, next) => {
+      let start;
+      const requestAnimationFrameCB = (timestamp) => {
+        if (!start) {
+          start = timestamp;
+        }
+
+        const delta = timestamp - start;
+        const progress = Math.min(delta / command.duration, 1);
+        command.run(progress);
+        if (progress < 1) {
+          requestAnimationFrame(requestAnimationFrameCB);
+        } else {
+          next();
+        }
+      };
+      return requestAnimationFrameCB;
+    };
+
+    const runCommand = (commands) => {
+      if (!commands.length) {
+        return;
+      }
+      const command = commands.shift();
+      if (command.type == TYPE.VOID) {
+        command.run();
+        runCommand(commands);
+      } else {
+        requestAnimationFrame(drawing(command, () => runCommand(commands)));
+      }
+    };
   </script>
 
   <script></script>
   <body onload="draw();">
-    <canvas id="canvas" width="300" height="300"></canvas>
+    <canvas
+      id="canvas"
+      width="300"
+      height="150"
+      style="border: 1px solid #333"
+    ></canvas>
   </body>
 </html>

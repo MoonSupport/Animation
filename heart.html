@@ -12,22 +12,24 @@
 
         var d = Math.min(w, h);
         var k = 120;
+        // A = K, B = K + D/4;
+        // moveTo(A, B);
         context.moveTo(k, k + d / 4);
-        console.log(k, k + d / 4, k, k, k + d / 4, k);
 
+        // moveTo(A, A, B, A);
         context.quadraticCurveTo(k, k, k + d / 4, k);
         console.log(k + d / 2, k, k + d / 2, k + d / 4);
         context.quadraticCurveTo(k + d / 2, k, k + d / 2, k + d / 4);
-        // context.quadraticCurveTo(k + d / 2, k, k + (d * 3) / 4, k);
-        // context.quadraticCurveTo(k + d, k, k + d, k + d / 4);
-        // context.quadraticCurveTo(
-        //   k + d,
-        //   k + d / 2,
-        //   k + (d * 3) / 4,
-        //   k + (d * 3) / 4
-        // );
-        // context.lineTo(k + d / 2, k + d);
-        // context.lineTo(k + d / 4, k + (d * 3) / 4);
+        context.quadraticCurveTo(k + d / 2, k, k + (d * 3) / 4, k);
+        context.quadraticCurveTo(k + d, k, k + d, k + d / 4);
+        context.quadraticCurveTo(
+          k + d,
+          k + d / 2,
+          k + (d * 3) / 4,
+          k + (d * 3) / 4
+        );
+        context.lineTo(k + d / 2, k + d);
+        context.lineTo(k + d / 4, k + (d * 3) / 4);
         // context.quadraticCurveTo(k, k + d / 2, k, k + d / 4);
         context.stroke();
       }; //]]>
