@@ -8,72 +8,12 @@
 
   <script>
     let init = false;
-    function draw() {
-      if (!init) {
-        document.querySelector("body").addEventListener("click", () => {
-          console.log("hit");
 
-          draw();
-        });
-        init = true;
-      }
+    document.addEventListener("DOMContentLoaded");
 
-      const canvas = document.querySelector("#canvas");
-      const context = canvas.getContext("2d");
-      context.clearRect(0, 0, 300, 300);
-
-      const commands = [
-        (radius) => {
-          context.beginPath();
-          context.arc(50, 50, 50, 0, (Math.PI / 180) * radius);
-        },
-      ];
-      let curr = 0;
-
-      function runCommand(curr) {
-        console.log(curr);
-        if (curr >= commands.length) return;
-        const command = commands[curr];
-        if (curr == 1) {
-          command();
-          runCommand(curr + 1);
-        } else {
-          function call(i) {
-            requestAnimationFrame(() => {
-              if (i > 360) {
-                runCommand(curr + 1);
-                return;
-              }
-              command(i);
-              context.stroke();
-              call(i + 6);
-            });
-          }
-          call(0);
-        }
-      }
-      runCommand(0);
-    }
+    function draw() {}
   </script>
 
-  <script>
-    // quadraticCurveTo(cp1x, cp1y, x, y)
-    // 현재 위치 에서 x,y 까지 cp1x, cp1y기준으로 그린다.
-    // function draw() {
-    //   const canvas = document.querySelector("#canvas");
-    //   const context = canvas.getContext("2d");
-    //   context.beginPath();
-    //   context.moveTo(75, 25);
-    //   context.quadraticCurveTo(25, 25, 25, 62.5);
-    //   context.quadraticCurveTo(25, 100, 50, 100);
-    //   context.quadraticCurveTo(50, 120, 30, 125);
-    //   context.quadraticCurveTo(60, 120, 65, 100);
-    //   context.quadraticCurveTo(125, 100, 125, 62.5);
-    //   context.quadraticCurveTo(125, 25, 75, 25);
-
-    //   context.stroke();
-    // }
-  </script>
   <script></script>
   <body onload="draw();">
     <canvas id="canvas" width="300" height="300"></canvas>

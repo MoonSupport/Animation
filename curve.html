@@ -5,7 +5,7 @@
     <script type="application/javascript"></script>
   </head>
   <script>
-    function animatePathDrawing(ctx, x0, y0, x1, y1, x2, y2, duration) {
+    function animatePathDrawing(ctx, x0, y0, x1, y1, x2, y2, duration, next) {
       const ctxSize = calculateClearLayer(x0, y0, x1, y1, x2, y2);
 
       let start = null;
@@ -22,6 +22,8 @@
 
         if (progress < 1) {
           window.requestAnimationFrame(step);
+        } else {
+          next();
         }
       };
 
@@ -109,16 +111,17 @@
       const axis_y = min_y;
       const width = max_x - min_x;
       const height = max_y - min_y;
-
-      return [axis_x / 1.1, axis_y / 1.1, width * 1.1, height * 1.1];
+      const w = 1.0;
+      return [axis_x / w, axis_y / w, width * w, height * w];
     }
 
     document.addEventListener("DOMContentLoaded", function () {
       const docCanvas = document.getElementById("canvas"),
         ctx = docCanvas.getContext("2d");
-
-      animatePathDrawing(ctx, 0, 100, 150, -50, 300, 100, 1000);
-      animatePathDrawing(ctx, 0, 300, 150, -50, 300, 300, 1000);
+      const next = () => {
+        animatePathDrawing(ctx, 170, 120, 220, 120, 220, 170, 1000);
+      };
+      animatePathDrawing(ctx, 120, 170, 120, 120, 170, 120, 1000, next);
     });
   </script>
 
