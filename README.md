@@ -8,6 +8,9 @@ axis
 
 <img src="./axis.gif"/>
 
-disorderedCurve
+simpleWave
+<img src="./simple_wave.gif" />
 
-<img src="./disorderedCurve.gif" />
+disorderedWave
+
+<img src="./disorderedWave.gif" />
