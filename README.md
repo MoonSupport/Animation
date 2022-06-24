@@ -7,3 +7,7 @@ animation included bezier curve
 axis
 
 <img src="./axis.gif"/>
+
+disorderedCurve
+
+<img src="./disorderedCurve.gif" />
