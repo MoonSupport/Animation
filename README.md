@@ -9,6 +9,7 @@ axis
 <img src="./axis.gif"/>
 
 simpleWave
+
 <img src="./simple_wave.gif" />
 
 disorderedWave
