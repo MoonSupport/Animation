@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body style="margin: 0"></body>
+  <script>
+    const createCanvas = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      document.body.appendChild(canvas);
+      return [canvas, ctx];
+    };
+    const setCanvasSize = (canvas) => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    const drawCurve = (ctx, { sx, sy, cx1, cy1, cx2, cy2, ex, ey }) => {
+      ctx.strokeStyle = "black";
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.bezierCurveTo(cx1, cy1, cx2, cy2, ex, ey);
+      ctx.stroke();
+    };
+
+    const updateCurves = (ctx, waves) => {
+      const cx1 = getWave(waves) * window.innerWidth;
+      const curveParam = {
+        sx: 0,
+        sy: 0,
+        cx1,
+        cy1: 0,
+        cx2: window.innerWidth / 2,
+        cy2: window.innerHeight,
+        ex: window.innerWidth,
+        ey: window.innerHeight,
+      };
+      drawCurve(ctx, curveParam);
+    };
+
+    const updateAnimation = (ctx, waves) => {
+      ctx.clearRect(0, 0, window.innerWidth, innerHeight);
+      updateCurves(ctx, waves);
+      updateWave(waves);
+      requestAnimationFrame(() => {
+        updateAnimation(ctx, waves);
+      });
+    };
+
+    const createeWaves = (len) => {
+      const waves = [];
+      for (let i = 0; i < len; i++) {
+        waves.push(Math.random() * 360);
+      }
+      return waves;
+    };
+
+    const getWave = (waves) => {
+      let blendedWave = waves.reduce((acc, cur) => {
+        return acc + Math.sin((cur / 180) * Math.PI);
+      }, 0);
+
+      return (blendedWave / waves.length + 1) / 2;
+    };
+
+    const config = {
+      waveSpeed: 1,
+    };
+
+    const updateWave = (waves) => {
+      waves.forEach((wave, i) => {
+        let r = Math.random() * (i + 1) * config.waveSpeed;
+        waves[i] = (wave + r) % 360;
+      });
+    };
+
+    window.onload = () => {
+      const [canvas, ctx] = createCanvas();
+
+      window.addEventListener("resize", () => {
+        setCanvasSize(canvas);
+      });
+
+      setCanvasSize(canvas);
+      const waves = createeWaves(1);
+
+      updateAnimation(ctx, waves);
+    };
+  </script>
+</html>
