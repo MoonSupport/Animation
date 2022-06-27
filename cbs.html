@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="480" height="320"></canvas>
+  </body>
+
+  <script>
+    function animateBezier(ctx, x0, y0, x1, y1, x2, y2, duration) {
+      let start = null;
+
+      function animateBezierStep(timestamp) {
+        if (start === null) start = timestamp;
+
+        const progress = Math.min((timestamp - start) / duration, 1);
+
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        drawBezier(ctx, x0, y0, x1, y1, x2, y2, 0, progress);
+        if (progress < 1) {
+          window.requestAnimationFrame(animateBezierStep);
+        }
+      }
+
+      window.requestAnimationFrame(animateBezierStep);
+    }
+
+    function drawBezier(ctx, x0, y0, x1, y1, x2, y2, t0, t1) {
+      ctx.beginPath();
+
+      if (0.0 == t0 && t1 == 1.0) {
+        ctx.moveTo(x0, y0);
+        ctx.quadraticCurveTo(x1, y1, x2, y2);
+      } else if (t0 != t1) {
+        const A_x =
+            Math.pow(1.0 - t0, 2) * x0 +
+            2.0 * t0 * (1 - t0) * x1 +
+            Math.pow(t0, 2) * x2,
+          A_y =
+            Math.pow(1.0 - t0, 2) * y0 +
+            2.0 * t0 * (1 - t0) * y1 +
+            Math.pow(t0, 2) * y2;
+
+        const C_x =
+            Math.pow(1.0 - t1, 2) * x0 +
+            2.0 * t1 * (1 - t1) * x1 +
+            Math.pow(t1, 2) * x2,
+          C_y =
+            Math.pow(1.0 - t1, 2) * y0 +
+            2.0 * t1 * (1 - t1) * y1 +
+            Math.pow(t1, 2) * y2;
+
+        const B_x = lerp(lerp(x0, x1, t0), lerp(x1, x2, t0), t1),
+          B_y = lerp(lerp(y0, y1, t0), lerp(y1, y2, t0), t1);
+
+        ctx.moveTo(A_x, A_y);
+        ctx.quadraticCurveTo(B_x, B_y, C_x, C_y);
+      }
+
+      ctx.stroke();
+      ctx.closePath();
+    }
+
+    function lerp(v0, v1, t) {
+      return (1.0 - t) * v0 + t * v1;
+    }
+
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    animateBezier(ctx, 0, 100, 150, -50, 300, 100, 5000);
+  </script>
+</html>
